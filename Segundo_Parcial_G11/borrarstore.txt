@@ -1,0 +1,145 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block content %}
+
+        <div class="container">
+            <img src="{% static 'images/bienvenida.png' %}" alt="Bienvenida" class="welcome-image">
+        </div>
+        <br/>
+
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="product" id="product1">
+                    <img class="thumbnail" src="{% static 'images/tommy1.png' %}">
+                    <div class="box-element">
+                        <h6 class="add-btn"><strong> Camisa Tommy Hilfiger    Q150</strong></h6>
+                        <hr>
+                        <div class="counter">
+                            <button class="btn btn-outline-secondary" onclick="decrement('hil1')">&#9664;</button>
+                            <span id="item-count1">0</span>
+                            <button class="btn btn-outline-secondary" onclick="increment('hil1')">&#9654;</button>
+                        </div>
+                        <a href="{% url 'add_to_cart' 101 %}">Añadir al carrito</a>
+                        <a class="btn btn-outline-success" href="tommy1">Ver</a>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="col-lg-4">
+                <div class="product" id="product2">
+                    <img class="thumbnail" src="{% static 'images/tommy2.png' %}">
+                    <div class="box-element">
+                        <h6 class="add-btn"><strong>Hoodie Tommy Hilfiger    Q200</strong></h6>
+                        <hr>
+                        <div class="counter">
+                            <button class="btn btn-outline-secondary" onclick="decrement('hil2')">&#9664;</button>
+                            <span id="item-count2">0</span>
+                            <button class="btn btn-outline-secondary" onclick="increment('hil2')">&#9654;</button>
+                        </div>
+                        <a href="{% url 'add_to_cart' 102 %}">Añadir al carrito</a>
+                        <a class="btn btn-outline-success " href="tommy2">Ver</a>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="col-lg-4">
+                <div class="product" id="product2">
+                    <img class="thumbnail" src="{% static 'images/tommy3.png' %}">
+                    <div class="box-element">
+                        <h6 class="add-btn"><strong>Sudadero Tommy Hilfiger    Q210</strong></h6>
+                        <hr>
+                        <div class="counter">
+                            <button class="btn btn-outline-secondary" onclick="decrement('hil2')">&#9664;</button>
+                            <span id="item-count2">0</span>
+                            <button class="btn btn-outline-secondary" onclick="increment('hil2')">&#9654;</button>
+                        </div>
+                        <a href="{% url 'add_to_cart' 103 %}">Añadir al carrito</a>
+                        <a class="btn btn-outline-success" href="tommy3">Ver</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+<div class="container">
+    <img src="{% static 'images/blanco.png' %}" alt="Despedida" class="welcome-image">
+</div>
+<br/>
+
+
+<div class="container">
+    <img src="{% static 'images/bienvenida2.png' %}" alt="Despedida" class="welcome-image">
+</div>
+<br/>
+
+<script>
+    let counts = {
+        hil1: parseInt(localStorage.getItem('hil1')) || 0,
+        hil2: parseInt(localStorage.getItem('hil2')) || 0,
+        hil3: parseInt(localStorage.getItem('hil3')) || 0,
+    };
+    const min = 0;
+    const max = 10;
+
+    function increment(product) {
+        if (counts[product] < max) {
+            counts[product]++;
+            updateDisplay(product);
+        }
+    }
+
+    function decrement(product) {
+        if (counts[product] > min) {
+            counts[product]--;
+            updateDisplay(product);
+        }
+    }
+
+    function updateDisplay(product) {
+        document.getElementById("item-count" + product.slice(3)).innerText = counts[product];
+        localStorage.setItem(product, counts[product]);  // Guarda el conteo en localStorage
+    }
+
+    function addToCart(productCode, countId) {
+    const count = counts[productCode];
+    let codigo;
+
+    // Determinar el código del producto según el identificador de productCode
+    switch (productCode) {
+        case 'hil1':
+            codigo = 101;
+            break;
+        case 'hil2':
+            codigo = 102;
+            break;
+        case 'hil3':
+            codigo = 103;
+            break;
+        default:
+            console.error('Producto no válido');
+            return;
+    }
+
+    // Enviar el código y la cantidad al servidor para actualizar la tabla
+    fetch('/update_cart', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ producto: codigo, cantidad: count }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Success:', data);
+        // Resetea el contador después de agregar al carrito
+        counts[productCode] = 0;
+        updateDisplay(productCode);
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+}
+
+</script>
+{% endblock content %}  

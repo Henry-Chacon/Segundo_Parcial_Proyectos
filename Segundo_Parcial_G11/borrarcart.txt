@@ -1,0 +1,76 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block content %}
+
+{% if messages %}
+    <div class="alert-container">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+
+<div class="container">
+    <h2>Tu Carrito</h2>
+    {% if cart_items %}
+        <ul>
+        {% for item in cart_items %}
+            <li>
+                {{ item.product.name }} - {{ item.quantity }} unidades - Q{{ item.get_total_price|floatformat:2 }}
+                <form method="post" action="{% url 'update_cart_sum' item.product.id %}">
+                    {% csrf_token %}
+                    <button type="submit" name="action" value="increase">+</button>
+                    <button type="submit" name="action" value="decrease">-</button>
+                </form>
+            </li>
+        {% endfor %}
+        </ul>
+        <h3>Total: Q{{ total_price }}</h3>
+        <a href="{% url 'checkout' %}" class="btn btn-success">Finalizar compra</a>
+    {% else %}
+        <p>Tu carrito está vacío.</p>
+    {% endif %}
+</div>
+{% endblock content %}
+
+
+
+
+
+from store.models import Product
+product = Product.objects.get(id=5)
+product.delete()
+
+
+
+from store.models import Product
+product = Product(
+    name="Camisa Tommy Hillfiger",
+    price=150.00,
+    description="Prenda de alta calidad de Tommy Hillfiger",
+    image="images/tommy1.png",
+    stock=10
+)
+product.save()
+
+
+
+products = Product.objects.all()
+
+for product in products:
+    print(f"ID: {product.id}, Nombre: {product.name}, Precio: {product.price}, Imagen: {product.image}")
+
+
+from django.contrib.sessions.models import Session
+sessions = Session.objects.all()
+for session in sessions:
+    cart = session.get_decoded().get('cart', {})
+    session_data = session.get_decoded()
+    session_data['cart'] = {}
+    session.save()
+
+
+
